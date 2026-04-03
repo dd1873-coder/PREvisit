@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+<style>
+body { font-family: Arial; background:#eee; }
+
+.form-sheet {
+    width: 900px;
+    background:#fff;
+    margin:auto;
+    padding:20px;
+    border:1px solid #000;
+}
+
+h2,h3 { text-align:center; margin:5px; }
+
+table {
+    width:100%;
+    border-collapse: collapse;
+    font-size:12px;
+}
+
+th, td {
+    border:1px solid #000;
+    padding:5px;
+}
+
+input {
+    width:100%;
+    border:none;
+    outline:none;
+}
+
+.signature-container {
+    display:flex;
+    gap:20px;
+}
+
+.signature-box {
+    border:1px solid #000;
+    height:120px;
+    width:100%;
+}
+
+button {
+    margin:10px;
+    padding:10px 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="report" class="form-sheet">
+
+<h2>Micromatic Machine Tools Pvt Ltd</h2>
+<h3>TPM PRE-VISIT REPORT-ACE</h3>
+
+<table>
+<tr>
+<td>Customer Name</td>
+<td><input></td>
+<td>Machine Model</td>
+<td><input></td>
+</tr>
+
+<tr>
+<td>Date</td>
+<td><input type="date"></td>
+<td>Contact No</td>
+<td><input></td>
+</tr>
+
+<tr>
+<td>Technician Name</td>
+<td><input></td>
+<td>Department</td>
+<td><input></td>
+</tr>
+</table>
+
+<br>
+
+<!-- CHECKLIST -->
+<table id="checkTable">
+<tr>
+<th>S.No</th>
+<th>Check Point</th>
+<th>OK</th>
+<th>Not OK</th>
+<th>Remarks</th>
+</tr>
+</table>
+
+<br>
+
+<!-- SCOPE SECTION -->
+<h3>Scope of Work / Spares</h3>
+<table id="scopeTable">
+<tr>
+<th>S.No</th>
+<th>Micromatic Scope / Recommendation</th>
+<th>Customer Scope / Approval</th>
+</tr>
+</table>
+
+<button onclick="addScopeRow()">+ Add Scope</button>
+
+<br><br>
+
+<!-- SIGNATURE -->
+<div class="signature-container">
+<div>
+<h4>MMT Signature/ Name</h4>
+<canvas id="techSign" class="signature-box"></canvas>
+<button onclick="clearSign('techSign')">Clear</button>
+</div>
+
+<div>
+<h4>Customer Signature</h4>
+<canvas id="custSign" class="signature-box"></canvas>
+<button onclick="clearSign('custSign')">Clear</button>
+</div>
+</div>
+
+</div>
+
+<div style="text-align:center;">
+<button onclick="downloadPDF()">Download PDF</button>
+</div>
+
+<script>
+
+// ✅ CHECKLIST (35 POINTS)
+const points = [
+"Machine Running Condition","Hydraulic Oil Level","Oil Leakage","Hydraulic Pressure",
+"Coolant Level","Coolant Pump","Lubrication System","Way Lube Level","Spindle Noise",
+"Spindle Runout","Chuck Condition","Tailstock Movement","Axis Movement","Servo Alarm",
+"Limit Switch","Emergency Stop","Door Interlock","Electrical Panel Cleanliness",
+"Fan Operation","Cable Condition","Encoder Feedback","Ball Screw Condition",
+"Guideways Condition","Air Pressure","Air Leakage","Filter Condition","Tool Magazine",
+"ATC Operation","Tool Clamp/Unclamp","Spindle Motor","Machine Level","Vibration",
+"Control Panel Buttons","Display Screen","Overall Machine Condition"
+];
+
+const table = document.getElementById("checkTable");
+
+points.forEach((p,i)=>{
+    table.innerHTML += `
+    <tr>
+    <td>${i+1}</td>
+    <td>${p}</td>
+    <td><input type="radio" name="r${i}"></td>
+    <td><input type="radio" name="r${i}"></td>
+    <td><input></td>
+    </tr>`;
+});
+
+// ✅ SCOPE ROW ADD
+let scopeCount = 0;
+
+function addScopeRow(){
+    scopeCount++;
+    document.getElementById("scopeTable").innerHTML += `
+    <tr>
+    <td>${scopeCount}</td>
+    <td><input placeholder="MMT recommendation"></td>
+    <td><input placeholder="Customer Scope"></td>
+    </tr>`;
+}
+
+// default rows
+for(let i=0;i<3;i++) addScopeRow();
+
+
+// ✅ SIGNATURE (MOBILE + MOUSE)
+function setupCanvas(id){
+    const canvas = document.getElementById(id);
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+
+    let drawing = false;
+
+    function getPos(e){
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x:(e.touches?e.touches[0].clientX:e.clientX)-rect.left,
+            y:(e.touches?e.touches[0].clientY:e.clientY)-rect.top
+        };
+    }
+
+    function draw(e){
+        if(!drawing) return;
+        const pos = getPos(e);
+        ctx.lineWidth = 2;
+        ctx.lineCap = "round";
+        ctx.lineTo(pos.x,pos.y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(pos.x,pos.y);
+    }
+
+    canvas.addEventListener("mousedown",()=>drawing=true);
+    canvas.addEventListener("mouseup",()=>drawing=false);
+    canvas.addEventListener("mousemove",draw);
+
+    canvas.addEventListener("touchstart",()=>drawing=true);
+    canvas.addEventListener("touchend",()=>drawing=false);
+    canvas.addEventListener("touchmove",draw);
+}
+
+setupCanvas("techSign");
+setupCanvas("custSign");
+
+function clearSign(id){
+    const canvas = document.getElementById(id);
+    canvas.getContext("2d").clearRect(0,0,canvas.width,canvas.height);
+}
+
+
+// ✅ PDF EXPORT (A4 MULTI PAGE)
+function downloadPDF(){
+    html2canvas(document.getElementById("report")).then(canvas=>{
+        const imgData = canvas.toDataURL("image/png");
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF("p","mm","a4");
+
+        const imgWidth = 210;
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+        const pageHeight = 295;
+
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData,'PNG',0,position,imgWidth,imgHeight);
+        heightLeft -= pageHeight;
+
+        while(heightLeft > 0){
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData,'PNG',0,position,imgWidth,imgHeight);
+            heightLeft -= pageHeight;
+        }
+
+        pdf.save("TPM_Report.pdf");
+    });
+}
+
+</script>
+
+</body>
+</html>
