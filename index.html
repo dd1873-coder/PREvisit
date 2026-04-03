@@ -18,7 +18,7 @@ body { font-family: Arial; background:#eee; }
     border:1px solid #000;
 }
 
-h2,h3 { text-align:center; margin:5px; }
+h2,h3 { text-align:center; }
 
 table {
     width:100%;
@@ -64,56 +64,42 @@ button {
 
 <table>
 <tr>
-<td>Customer Name</td>
-<td><input></td>
-<td>Machine Model</td>
-<td><input></td>
+<td>Customer Name</td><td><input id="cust"></td>
+<td>Machine Model</td><td><input id="model"></td>
 </tr>
 
 <tr>
-<td>Contact Person</td>
-<td><input></td>
-<td>Machine SL.NO</td>
-<td><input></td>
+<td>Contact Person</td><td><input id="person"></td>
+<td>Machine SL.NO</td><td><input id="sl"></td>
 </tr>
 
 <tr>
-<td>Department</td>
-<td><input></td>
-<td>Contact No</td>
-<td><input></td>
+<td>Department</td><td><input id="dept"></td>
+<td>Contact No</td><td><input id="contact"></td>
 </tr>
 
 <tr>
-<td>Date</td>
-<td><input type="date"></td>
-<td>Attended By</td>
-<td><input></td>
+<td>Date</td><td><input type="date" id="date"></td>
+<td>Attended By</td><td><input id="tech"></td>
 </tr>
 </table>
 
 <br>
 
-<!-- CHECKLIST -->
 <table id="checkTable">
 <tr>
-<th>S.No</th>
-<th>Check Point</th>
-<th>OK</th>
-<th>Not OK</th>
-<th>Remarks</th>
+<th>S.No</th><th>Check Point</th><th>OK</th><th>Not OK</th><th>Remarks</th>
 </tr>
 </table>
 
 <br>
 
-<!-- SCOPE SECTION -->
 <h3>Scope of Work / Spares</h3>
 <table id="scopeTable">
 <tr>
 <th>S.No</th>
-<th>Micromatic Scope / Recommendation</th>
-<th>Customer Scope / Approval</th>
+<th>MMT Scope</th>
+<th>Customer Scope</th>
 </tr>
 </table>
 
@@ -121,10 +107,9 @@ button {
 
 <br><br>
 
-<!-- SIGNATURE -->
 <div class="signature-container">
 <div>
-<h4>MMT Signature/ Name</h4>
+<h4>MMT Signature</h4>
 <canvas id="techSign" class="signature-box"></canvas>
 <button onclick="clearSign('techSign')">Clear</button>
 </div>
@@ -144,7 +129,7 @@ button {
 
 <script>
 
-// ✅ CHECKLIST (35 POINTS)
+// ---------- CHECKLIST ----------
 const points = [
 "Machine in Running Condition","Oil Leakage in Hydraulic Tank","Oil Leakage in Hydraulic Circuit, Hose Condition, etc.,","Noise in Hydraulic System",
 "Functioning of Hydraulic System","Oil Leakage in Lubrication Tank","Oil Leakage in Lubrication Circuit, Hose Condition, etc.,","Functioning of Lubrication pressure gauge","Coolant Leakage, if any",
@@ -153,40 +138,62 @@ const points = [
 "Turret Cable Condition","Availability of Ac Relay in Turret Circuit","Foot Switch Condition","Machine door condition",
 "A/C Condition-Functioning, Grill, Mesh, etc.,","Electrical Panel Condition","Cooling fans Condition - Spindle/Heat Sink, system, etc.,","Spindle, Axis cables Condition","Machine Incoming Supply, E-N Voltage, etc.,",
 "Axis Wiper Condition","Axis Condition - Noise","Ball Screw Condition","Size Variation, Slide Play, Backlash, if any","Belt Condition - Axis, Spindle, Encoder, etc.,",
-"Machine lamp condition","Condition of System Screen","Battery Condition - System & Drive"
+"Machine lamp condition","Condition of System Screen","Battery Condition - System & Drive"-0
 ];
 
-const table = document.getElementById("checkTable");
+const checkTable = document.getElementById("checkTable");
 
 points.forEach((p,i)=>{
-    table.innerHTML += `
+    checkTable.innerHTML += `
     <tr>
     <td>${i+1}</td>
     <td>${p}</td>
-    <td><input type="radio" name="r${i}"></td>
-    <td><input type="radio" name="r${i}"></td>
-    <td><input></td>
+    <td><input type="radio" name="r${i}" value="OK" onchange="saveData()"></td>
+    <td><input type="radio" name="r${i}" value="NOTOK" onchange="saveData()"></td>
+    <td><input id="remark${i}" oninput="saveData()"></td>
     </tr>`;
 });
 
-// ✅ SCOPE ROW ADD
+// ---------- SCOPE ----------
 let scopeCount = 0;
+let scopeSuggestions = JSON.parse(localStorage.getItem("scopeSuggestions")) || [];
 
-function addScopeRow(){
+function addScopeRow(data={}){
     scopeCount++;
+
+    let options = scopeSuggestions.map(s => `<option value="${s}">`).join("");
+
     document.getElementById("scopeTable").innerHTML += `
     <tr>
     <td>${scopeCount}</td>
-    <td><input placeholder="MMT recommendation"></td>
-    <td><input placeholder="Customer Scope"></td>
+
+    <td>
+        <input list="mmtList${scopeCount}" 
+               value="${data.mmt || ''}" 
+               oninput="handleScope(this.value)"
+               placeholder="MMT scope">
+        <datalist id="mmtList${scopeCount}">${options}</datalist>
+    </td>
+
+    <td>
+        <input list="custList${scopeCount}" 
+               value="${data.customer || ''}" 
+               oninput="handleScope(this.value)"
+               placeholder="Customer scope">
+        <datalist id="custList${scopeCount}">${options}</datalist>
+    </td>
     </tr>`;
 }
 
-// default rows
-for(let i=0;i<3;i++) addScopeRow();
+function handleScope(val){
+    if(val && !scopeSuggestions.includes(val)){
+        scopeSuggestions.push(val);
+        localStorage.setItem("scopeSuggestions", JSON.stringify(scopeSuggestions));
+    }
+    saveData();
+}
 
-
-// ✅ SIGNATURE (MOBILE + MOUSE)
+// ---------- SIGNATURE ----------
 function setupCanvas(id){
     const canvas = document.getElementById(id);
     const ctx = canvas.getContext("2d");
@@ -194,73 +201,153 @@ function setupCanvas(id){
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
 
-    let drawing = false;
+    let drawing=false;
 
     function getPos(e){
-        const rect = canvas.getBoundingClientRect();
+        const r=canvas.getBoundingClientRect();
         return {
-            x:(e.touches?e.touches[0].clientX:e.clientX)-rect.left,
-            y:(e.touches?e.touches[0].clientY:e.clientY)-rect.top
+            x:(e.touches?e.touches[0].clientX:e.clientX)-r.left,
+            y:(e.touches?e.touches[0].clientY:e.clientY)-r.top
         };
     }
 
     function draw(e){
         if(!drawing) return;
-        const pos = getPos(e);
-        ctx.lineWidth = 2;
-        ctx.lineCap = "round";
-        ctx.lineTo(pos.x,pos.y);
+        let p=getPos(e);
+        ctx.lineTo(p.x,p.y);
         ctx.stroke();
         ctx.beginPath();
-        ctx.moveTo(pos.x,pos.y);
+        ctx.moveTo(p.x,p.y);
+        saveSignature(id);
     }
 
-    canvas.addEventListener("mousedown",()=>drawing=true);
-    canvas.addEventListener("mouseup",()=>drawing=false);
-    canvas.addEventListener("mousemove",draw);
+    canvas.onmousedown=()=>drawing=true;
+    canvas.onmouseup=()=>drawing=false;
+    canvas.onmousemove=draw;
 
-    canvas.addEventListener("touchstart",()=>drawing=true);
-    canvas.addEventListener("touchend",()=>drawing=false);
-    canvas.addEventListener("touchmove",draw);
+    canvas.ontouchstart=()=>drawing=true;
+    canvas.ontouchend=()=>drawing=false;
+    canvas.ontouchmove=draw;
 }
 
 setupCanvas("techSign");
 setupCanvas("custSign");
 
-function clearSign(id){
-    const canvas = document.getElementById(id);
-    canvas.getContext("2d").clearRect(0,0,canvas.width,canvas.height);
+function saveSignature(id){
+    localStorage.setItem(id, document.getElementById(id).toDataURL());
 }
 
+function loadSignature(id){
+    let d=localStorage.getItem(id);
+    if(!d) return;
+    let img=new Image();
+    img.onload=()=>document.getElementById(id).getContext("2d").drawImage(img,0,0);
+    img.src=d;
+}
 
-// ✅ PDF EXPORT (A4 MULTI PAGE)
-function downloadPDF(){
-    html2canvas(document.getElementById("report")).then(canvas=>{
-        const imgData = canvas.toDataURL("image/png");
+function clearSign(id){
+    let c=document.getElementById(id);
+    c.getContext("2d").clearRect(0,0,c.width,c.height);
+    localStorage.removeItem(id);
+}
 
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF("p","mm","a4");
+// ---------- SAVE ----------
+function saveData(){
+    let data={
+        cust:cust.value, model:model.value, person:person.value,
+        sl:sl.value, dept:dept.value, contact:contact.value,
+        date:date.value, tech:tech.value,
+        checklist:[], scope:[]
+    };
 
-        const imgWidth = 210;
-        const imgHeight = canvas.height * imgWidth / canvas.width;
-        const pageHeight = 295;
+    points.forEach((p,i)=>{
+        let s=document.querySelector(`input[name="r${i}"]:checked`);
+        data.checklist.push({
+            status:s?s.value:"",
+            remark:document.getElementById(`remark${i}`).value
+        });
+    });
 
-        let heightLeft = imgHeight;
-        let position = 0;
+    document.querySelectorAll("#scopeTable tr").forEach((r,i)=>{
+        if(i===0) return;
+        let inp=r.querySelectorAll("input");
+        data.scope.push({
+            mmt:inp[0].value,
+            customer:inp[1].value
+        });
+    });
 
-        pdf.addImage(imgData,'PNG',0,position,imgWidth,imgHeight);
-        heightLeft -= pageHeight;
+    localStorage.setItem("reportData", JSON.stringify(data));
+}
 
-        while(heightLeft > 0){
-            position = heightLeft - imgHeight;
-            pdf.addPage();
-            pdf.addImage(imgData,'PNG',0,position,imgWidth,imgHeight);
-            heightLeft -= pageHeight;
+// ---------- LOAD (FIXED) ----------
+function loadData(){
+
+    scopeSuggestions = JSON.parse(localStorage.getItem("scopeSuggestions")) || [];
+
+    let d=JSON.parse(localStorage.getItem("reportData"));
+
+    // RESET TABLE FIRST (IMPORTANT FIX)
+    document.getElementById("scopeTable").innerHTML = `
+    <tr>
+    <th>S.No</th>
+    <th>MMT Scope</th>
+    <th>Customer Scope</th>
+    </tr>`;
+
+    scopeCount = 0;
+
+    if(!d){
+        for(let i=0;i<3;i++) addScopeRow();
+        return;
+    }
+
+    cust.value=d.cust||"";
+    model.value=d.model||"";
+    person.value=d.person||"";
+    sl.value=d.sl||"";
+    dept.value=d.dept||"";
+    contact.value=d.contact||"";
+    date.value=d.date||"";
+    tech.value=d.tech||"";
+
+    d.checklist?.forEach((it,i)=>{
+        if(it.status){
+            let r=document.querySelector(`input[name="r${i}"][value="${it.status}"]`);
+            if(r) r.checked=true;
         }
+        document.getElementById(`remark${i}`).value=it.remark||"";
+    });
 
+    if(d.scope && d.scope.length){
+        d.scope.forEach(x=>addScopeRow(x));
+    } else {
+        for(let i=0;i<3;i++) addScopeRow();
+    }
+}
+
+// ---------- PDF ----------
+function downloadPDF(){
+    html2canvas(report).then(c=>{
+        let pdf=new jspdf.jsPDF();
+        pdf.addImage(c.toDataURL(),"PNG",0,0,210,295);
         pdf.save("TPM_Report.pdf");
+
+        if(confirm("Clear form after download?")){
+            localStorage.clear();
+            location.reload();
+        }
     });
 }
+
+// ---------- INIT ----------
+loadData();
+loadSignature("techSign");
+loadSignature("custSign");
+
+document.querySelectorAll("input").forEach(i=>{
+    i.addEventListener("input", saveData);
+});
 
 </script>
 
