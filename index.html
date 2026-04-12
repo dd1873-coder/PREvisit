@@ -1,222 +1,197 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ta">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>TPM Pre-Visit Report(ACE) | ACE DESIGNERS</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <title>TPM Pre-Visit Report (ACE) | ACE DESIGNERS</title>
+    <!-- html2canvas + jspdf CDNs -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
         }
-
-        .info-item input {
-            white-space: normal !important;
-            overflow: visible !important;
-            text-overflow: unset !important;
-        }
-
         body {
             font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
             background: #e2e8f0;
             margin: 0;
-            padding: 30px 20px;
+            padding: 20px 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-
         .form-sheet {
-            max-width: 1350px;
+            max-width: 1400px;
             width: 100%;
             background: white;
-            margin: 0 auto 30px auto;
-            padding: 25px 30px;
-            border-radius: 16px;
+            margin: 0 auto 25px auto;
+            padding: 20px 24px;
+            border-radius: 20px;
             box-shadow: 0 20px 35px -12px rgba(0,0,0,0.2);
             border: 1px solid #cbd5e1;
         }
-
         h2 {
             text-align: center;
-            margin: 0 0 5px 0;
+            margin: 0 0 4px 0;
             color: #0f3b5c;
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 700;
         }
-
-        h3 {
-            text-align: center;
-            margin: 0 0 20px 0;
+        .branch-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            font-weight: 600;
+            font-size: 0.85rem;
             color: #1e4663;
-            font-size: 1.2rem;
-            font-weight: 500;
-            border-bottom: 2px solid #cbd5e1;
-            display: inline-block;
-            width: auto;
-            padding-bottom: 5px;
+            margin-bottom: 8px;
         }
-
-        /* Info Grid */
         .info-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px 20px;
+            gap: 1px 30px;
             background: #f8fafc;
-            padding: 18px 22px;
-            border-radius: 16px;
+            padding: 18px 24px;
+            border-radius: 18px;
             margin: 15px 0 20px 0;
             border: 1px solid #e2e8f0;
         }
-
         .info-item {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
         }
-
         .info-item label {
             font-weight: 700;
-            min-width: 110px;
+            min-width: 140px;
             color: #1e293b;
             font-size: 0.85rem;
+            white-space: normal;
+            word-break: keep-all;
         }
-
-        .info-item input, .info-item input[type="date"] {
-            flex: 1;
-            padding: 8px 12px;
+        .info-item input, 
+        .info-item input[type="date"], 
+        .info-item select {
+            flex: 2;
+            min-width: 200px;
+            width: auto;
+            padding: 10px 14px;
             border: 1px solid #cbd5e1;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 0.85rem;
             background: white;
-            transition: 0.2s;
             font-family: inherit;
+            box-sizing: border-box;
+            transition: 0.2s;
         }
-
-        .info-item input:focus {
+        .info-item input:focus, .info-item select:focus {
             outline: none;
             border-color: #2c6e9e;
             box-shadow: 0 0 0 2px rgba(44,110,158,0.2);
         }
-
-        /* Table Styles - BORDERS VISIBLE */
-        table {
+        .checklist-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.8rem;
-            margin: 18px 0;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            font-size: 0.72rem;
+            margin: 12px 0;
             table-layout: fixed;
         }
-
-        th, td {
-            border: 1.5px solid #1e293b;
-            padding: 10px 8px;
+        .checklist-table th, .checklist-table td {
+            border: 1.2px solid #1e293b;
+            padding: 6px 5px;
             vertical-align: top;
         }
-
-        th {
+        .checklist-table th {
             background-color: #eef2ff;
             font-weight: 700;
             color: #0c4a6e;
             text-align: center;
+            font-size: 0.72rem;
         }
-
-        td {
-            background-color: #ffffff;
-            word-wrap: break-word;
-        }
-
-        /* Column widths for checklist */
         .checklist-table th:nth-child(1) { width: 6%; }
-        .checklist-table th:nth-child(2) { width: 44%; }
-        .checklist-table th:nth-child(3) { width: 8%; }
-        .checklist-table th:nth-child(4) { width: 10%; }
-        .checklist-table th:nth-child(5) { width: 32%; }
-
-        /* Radio cells */
+        .checklist-table th:nth-child(2) { width: 40%; }
+        .checklist-table th:nth-child(3) { width: 7%; }
+        .checklist-table th:nth-child(4) { width: 7%; }
+        .checklist-table th:nth-child(5) { width: 40%; }
+        
         .radio-cell {
             text-align: center;
             vertical-align: middle;
         }
-
         input[type="radio"] {
-            transform: scale(1.2);
+            transform: scale(1.0);
             margin: 0;
             accent-color: #2c6e9e;
             cursor: pointer;
         }
-
-        /* Input fields inside table - FIXED to show full text */
-        .remark-input, .scope-mmt, .scope-cust {
+        .remark-input {
             width: 100%;
             border: 1px solid #cbd5e1;
             background: #fefce8;
-            padding: 8px 10px;
+            padding: 5px 6px;
             border-radius: 8px;
-            font-size: 0.75rem;
+            font-size: 0.68rem;
             font-family: inherit;
-            transition: 0.15s;
             resize: vertical;
-            min-height: 45px;
-            line-height: 1.4;
+            min-height: 44px;
+            line-height: 1.3;
+            box-sizing: border-box;
         }
-
-        .remark-input:focus, .scope-mmt:focus, .scope-cust:focus {
-            outline: none;
-            border-color: #2c6e9e;
-            background: #ffffff;
-            box-shadow: 0 0 0 2px rgba(44,110,158,0.1);
+        .scope-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            margin: 12px 0;
         }
-
-        /* Scope table column widths */
-        .scope-table th:nth-child(1) { width: 10%; }
-        .scope-table th:nth-child(2) { width: 45%; }
-        .scope-table th:nth-child(3) { width: 45%; }
-
-        /* Signature area */
+        .scope-table th, .scope-table td {
+            border: 1.2px solid #1e293b;
+            padding: 8px 8px;
+        }
+        .scope-table th:nth-child(1) { width: 8%; }
+        .scope-table th:nth-child(2) { width: 46%; }
+        .scope-table th:nth-child(3) { width: 46%; }
+        .scope-mmt, .scope-cust {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            background: #fefce8;
+            padding: 6px 8px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            resize: vertical;
+            min-height: 42px;
+            font-family: inherit;
+        }
         .signature-row {
             display: flex;
             flex-wrap: wrap;
-            gap: 40px;
-            margin-top: 28px;
-            margin-bottom: 15px;
-            justify-content: space-between;
+            gap: 30px;
+            margin-top: 25px;
+            margin-bottom: 10px;
         }
-
         .sign-card {
             flex: 1;
-            min-width: 220px;
+            min-width: 210px;
             text-align: center;
         }
-
         .signature-box {
             border: 2px dashed #475569;
             border-radius: 16px;
-            height: 130px;
+            height: 110px;
             width: 100%;
             object-fit: contain;
             background: #fef9e6;
             cursor: pointer;
             transition: 0.2s;
         }
-
-        .signature-box:hover {
-            border-color: #2c6e9e;
-            background: #f1f5f9;
-        }
-
-        /* Buttons */
         .btn-group {
             display: flex;
             gap: 12px;
             justify-content: center;
             flex-wrap: wrap;
-            margin: 20px 0 10px;
+            margin: 15px 0 10px;
         }
-
         button {
             background: #1e4663;
             border: none;
@@ -227,34 +202,23 @@
             cursor: pointer;
             font-size: 0.85rem;
             transition: 0.2s;
-            font-family: inherit;
         }
-
         button:hover {
             background: #0f2f48;
             transform: scale(0.97);
         }
-
         .btn-add {
             background: #2b6e4c;
-            margin-top: 5px;
+            /* இது website-ல காட்டப்படும் */
         }
-
         .btn-download {
             background: #0f3b5c;
             padding: 12px 28px;
             font-size: 1rem;
         }
-
         .btn-clear {
             background: #9e2d2f;
         }
-
-        .btn-clear:hover {
-            background: #7f2224;
-        }
-
-        /* MODAL for signature */
         #signModal {
             display: none;
             position: fixed;
@@ -268,7 +232,6 @@
             justify-content: center;
             align-items: center;
         }
-
         .modal-box {
             background: white;
             padding: 20px;
@@ -276,9 +239,7 @@
             width: 90%;
             max-width: 500px;
             text-align: center;
-            box-shadow: 0 20px 35px black;
         }
-
         canvas {
             width: 100%;
             height: auto;
@@ -288,101 +249,81 @@
             border: 2px solid #334155;
             cursor: crosshair;
         }
-
-        .modal-buttons {
-            margin-top: 15px;
-        }
-
         footer {
             text-align: center;
             margin-top: 10px;
             font-size: 0.7rem;
             color: #475569;
         }
-
-        @media (max-width: 800px) {
-            .form-sheet {
-                padding: 16px;
-            }
-            th, td {
-                font-size: 0.7rem;
-                padding: 6px;
-            }
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-            .remark-input, .scope-mmt, .scope-cust {
-                font-size: 0.7rem;
-                padding: 6px;
-                min-height: 40px;
-            }
+        @media (max-width: 780px) {
+            .form-sheet { padding: 14px; }
+            .info-grid { grid-template-columns: 1fr; gap: 12px; padding: 14px; }
+            .info-item { flex-wrap: wrap; }
+            .info-item label { min-width: 130px; white-space: normal; }
+            .info-item input, .info-item select { min-width: 100%; flex: auto; }
+            .checklist-table th, .checklist-table td { font-size: 0.6rem; padding: 4px 3px; }
+            .remark-input { font-size: 0.6rem; min-height: 38px; }
+            .checklist-table th:nth-child(2) { width: 38%; }
+            .checklist-table th:nth-child(5) { width: 42%; }
+        }
+        @media (max-width: 550px) {
+            .form-sheet { overflow-x: auto; }
+            .checklist-table { min-width: 550px; }
+        }
+        .info-item input, .info-item select, .remark-input, .scope-mmt, .scope-cust {
+            word-break: break-word;
+            white-space: normal;
         }
     </style>
 </head>
 <body>
 
 <div id="report" class="form-sheet">
-    <h2 style="white-space: pre;">
-    Main Branch: Chennai                                                            Sub Branch: Tambaram
-    </h2>
+    <div class="branch-row">
+        <span>Main Branch: Chennai</span>
+        <span>Sub Branch: Tambaram</span>
+    </div>
     <h2>ACE DESIGNERS</h2> 
     <h2>TPM PRE-VISIT REPORT (ACE)</h2>
 
-    <!-- Customer & machine details grid -->
     <div class="info-grid">
-        <div class="info-item"><label>🏭 Customer Name :</label><input type="text" id="custName" placeholder="Enter Customer Name" value=""></div>
-        <div class="info-item"><label>⚙️ Machine Model :</label><input type="text" id="machineModel" placeholder="Enter M/C Type" value=""></div>
-        <div class="info-item"><label>👤 Contact Person :</label><input type="text" id="contactPerson" placeholder="Enter Contact Person Name" value="Mr."></div>
-        <div class="info-item"><label>🔢 Machine SL.NO :</label><input type="text" id="machineSN" placeholder="Enter M/C SL NO" value=""></div>
-        <div class="info-item"><label>📂 Department :</label><input type="text" id="dept" placeholder="Production / Maintenance" value=""></div>
-        <div class="info-item"><label>📞 Contact No :</label><input type="text" id="contactNo" placeholder="+91 0123456789" value=""></div>
+        <div class="info-item"><label>🏭 Customer Name :</label><input type="text" id="custName" placeholder="Enter Customer Name" value="" autocomplete="off"></div>
+        <div class="info-item"><label>⚙️ Machine Model :</label><input type="text" id="machineModel" placeholder="Enter M/C Type" value="" autocomplete="off"></div>
+        <div class="info-item"><label>👤 Contact Person :</label><input type="text" id="contactPerson" placeholder="Enter Contact Person Name" value="Mr." autocomplete="off"></div>
+        <div class="info-item"><label>🔢 Machine SL.NO :</label><input type="text" id="machineSN" placeholder="Enter M/C SL NO" value="" autocomplete="off"></div>
+        <div class="info-item"><label>📂 Department :</label><input type="text" id="dept" placeholder="Production / Maintenance" value="" autocomplete="off"></div>
+        <div class="info-item"><label>📞 Contact No :</label><input type="text" id="contactNo" placeholder="+91 0123456789" value="" autocomplete="off"></div>
         <div class="info-item"><label>📅 Date :</label><input type="date" id="reportDate" value=""></div>
         <div class="info-item"><label>👨‍🔧 Attended by :</label>
-                    <select id="attendedby">
-                        <option value="">Select Engineer</option>
-                        <option>Saravanan M</option>
-                        <option>Srinivasan J</option>
-                        <option>Dinesh T</option>
-                        <option>Suresh c</option>
-                        <option>Suresh M</option>
-                        <option>Vignesh m</option>
-                        <option>Arun s</option>
-                        <option>Arun V</option>
-                        <option>Pradeep </option>
-                    </select></div>
-
-            
+            <select id="attendedby">
+                <option value="">Select Engineer</option>
+                <option>Saravanan M</option><option>Srinivasan J</option><option>Dinesh T</option>
+                <option>Suresh C</option><option>Suresh M</option><option>Vignesh M</option>
+                <option>Arun S</option><option>Arun V</option><option>Pradeep</option>
+            </select>
+        </div>
     </div>
 
-    <!-- Main checklist table (bordered) with proper column widths -->
     <table class="checklist-table" id="checklistTable">
         <thead>
-            <tr>
-                <th>S.No</th>
-                <th>Check Point Description</th>
-                <th>✅ OK</th>
-                <th>❌ NOT OK</th>
-                <th>Remarks / Observations</th>
-            </tr>
+            <tr><th>S.No</th><th>Check Point Description</th><th>✅ OK</th><th>❌ NOT OK</th><th>Remarks / Observations</th></tr>
         </thead>
         <tbody id="checklistBody"></tbody>
     </table>
 
-    <!-- Scope of work table -->
-    <div style="margin-top: 10px;">
-        <h3 style="display: block; text-align: center;">🔩 Scope of Work / Spares Recommendation</h3>
+    <div style="margin-top: 8px;">
+        <h3 style="display: block; text-align: center; margin: 12px 0 8px 0; font-size: 1rem;">🔩 Scope of Work / Spares Recommendation</h3>
     </div>
     <table class="scope-table" id="scopeTable">
-        <thead>
-            <tr><th>S.No</th><th>MMT Scope (Action / Spares)</th><th>Customer Scope / Remarks</th></tr>
-        </thead>
+        <thead><tr><th>S.No</th><th>MMT Scope (Action / Spares)</th><th>Customer Scope / Remarks</th></tr></thead>
         <tbody id="scopeBody"></tbody>
     </table>
-    <div style="text-align: left; margin-bottom: 10px;">
+    
+    <!-- ADD SCOPE ROW BUTTON - Website-ல மட்டும் தெரியும், PDF-ல மறையும் -->
+    <div id="addScopeButtonContainer" style="text-align: left; margin-bottom: 10px;">
         <button type="button" class="btn-add" id="addScopeBtn">➕ Add Scope Row</button>
     </div>
 
-    <!-- Signature Section -->
     <div class="signature-row">
         <div class="sign-card">
             <strong>👨‍🔧 MMT Service Engineer Signature</strong>
@@ -396,27 +337,24 @@
     <footer>✔️ Tap on signature box to draw the signature.</footer>
 </div>
 
-<!-- Action Buttons -->
 <div class="btn-group">
-    <button class="btn-download" onclick="generatePDF()">📄 Download TPM Report (PDF)</button>
-    <button class="btn-clear" onclick="clearAllFormData()">🗑️ Clear All Form Data</button>
+    <button class="btn-download" id="downloadPdfBtn">📄 Download TPM Report (PDF)</button>
+    <button class="btn-clear" id="clearAllBtn">🗑️ Clear All Form Data</button>
 </div>
 
-<!-- Signature Modal -->
 <div id="signModal">
     <div class="modal-box">
         <h3>✍️ Draw Signature</h3>
         <canvas id="signatureCanvas" width="400" height="180" style="width:100%; height:auto; max-width:400px; background:#fff; touch-action:none;"></canvas>
         <div class="modal-buttons">
-            <button onclick="clearCanvas()">🧽 Clear</button>
-            <button onclick="saveSignature()">💾 Save Signature</button>
-            <button onclick="closeModal()">Cancel</button>
+            <button id="clearCanvasBtn">🧽 Clear</button>
+            <button id="saveSigBtn">💾 Save Signature</button>
+            <button id="closeModalBtn">Cancel</button>
         </div>
     </div>
 </div>
 
 <script>
-    // ======================= 1. CHECKLIST DATA (35 points from original) =======================
     const checkPoints = [
         "Machine in Running Condition", "Oil Leakage in Hydraulic Tank", "Oil Leakage in Hydraulic Circuit, Hose Condition", "Noise in Hydraulic System",
         "Functioning of Hydraulic System", "Oil Leakage in Lubrication Tank", "Oil Leakage in Lubrication Circuit / Hoses", "Functioning of Lubrication pressure gauge",
@@ -429,10 +367,9 @@
         "Machine lamp condition", "Condition of System Screen", "Battery Condition (System & Drive)"
     ];
 
-    const checklistBody = document.getElementById("checklistBody");
-
     function buildChecklistTable() {
-        checklistBody.innerHTML = "";
+        const tbody = document.getElementById("checklistBody");
+        tbody.innerHTML = "";
         checkPoints.forEach((point, idx) => {
             const row = document.createElement("tr");
             row.innerHTML = `
@@ -440,54 +377,22 @@
                 <td style="vertical-align:middle;">${point}</td>
                 <td class="radio-cell" style="text-align:center; vertical-align:middle;"><input type="radio" name="status_${idx}" value="OK" class="radio-ok"></td>
                 <td class="radio-cell" style="text-align:center; vertical-align:middle;"><input type="radio" name="status_${idx}" value="NOTOK" class="radio-notok"></td>
-                <td><textarea class="remark-input" data-idx="${idx}" rows="2" placeholder="Enter detailed remarks, observations, leakage, noise level, etc..." style="width:100%; resize:vertical;"></textarea></td>
+                <td><textarea class="remark-input" data-idx="${idx}" rows="2" placeholder="Enter detailed remarks..." style="width:100%; resize:vertical;"></textarea></td>
             `;
-            checklistBody.appendChild(row);
-        });
-        attachChecklistEvents();
-    }
-
-    function convertInputsToText() {
-        document.querySelectorAll("input").forEach(input => {
-            const span = document.createElement("span");
-            span.innerText = input.value || "";
-            span.style.display = "block";
-            span.style.minHeight = "20px";
-            span.style.padding = "5px";
-            span.style.fontSize = "12px";
-            span.style.wordBreak = "break-word";
-
-            input.parentNode.replaceChild(span, input);
+            tbody.appendChild(row);
         });
     }
 
-    function attachChecklistEvents() {
-        document.querySelectorAll(".info-item input").forEach(input => {
-            input.addEventListener("input", function () {
-                this.style.height = "auto";
-                this.style.height = (this.scrollHeight) + "px";
-            });
-        });
-        document.querySelectorAll('input[type="radio"]').forEach(radio => {
-            radio.addEventListener("change", () => saveAllFormData());
-        });
-        document.querySelectorAll('.remark-input').forEach(inp => {
-            inp.addEventListener("input", () => saveAllFormData());
-        });
-
-    }
-
-    // ======================= 2. SCOPE TABLE DYNAMIC =======================
-    const scopeBody = document.getElementById("scopeBody");
     let scopeCounter = 0;
+    const scopeBody = document.getElementById("scopeBody");
 
     function addScopeRow(mmtVal = "", custVal = "") {
         scopeCounter++;
         const newRow = document.createElement("tr");
         newRow.innerHTML = `
             <td style="text-align:center; vertical-align:middle;">${scopeCounter}</td>
-            <td><textarea class="scope-mmt" rows="2" placeholder="e.g., MMT Scope..." style="width:100%; resize:vertical;">${escapeHtml(mmtVal)}</textarea></td>
-            <td><textarea class="scope-cust" rows="2" placeholder="e.g., Customer Scope..." style="width:100%; resize:vertical;">${escapeHtml(custVal)}</textarea></td>
+            <td><textarea class="scope-mmt" rows="2" placeholder="MMT Scope (action / spares)..." style="width:100%; resize:vertical;">${escapeHtml(mmtVal)}</textarea></td>
+            <td><textarea class="scope-cust" rows="2" placeholder="Customer Scope / Remarks..." style="width:100%; resize:vertical;">${escapeHtml(custVal)}</textarea></td>
         `;
         scopeBody.appendChild(newRow);
         const mmtInp = newRow.querySelector('.scope-mmt');
@@ -500,11 +405,8 @@
         scopeBody.innerHTML = "";
         scopeCounter = 0;
         if (savedScopes && savedScopes.length > 0) {
-            savedScopes.forEach(item => {
-                addScopeRow(item.mmt || "", item.customer || "");
-            });
+            savedScopes.forEach(item => addScopeRow(item.mmt || "", item.customer || ""));
         } else {
-            // default 3 meaningful rows
             addScopeRow("", "Arrange oil if required");
             addScopeRow("", "Support for coolant disposal and fresh coolant");
             addScopeRow("", "");
@@ -521,7 +423,6 @@
         });
     }
 
-    // ======================= 3. LOCAL STORAGE (SAVE/LOAD) =======================
     function saveAllFormData() {
         const reportData = {
             customer: document.getElementById("custName").value,
@@ -535,7 +436,6 @@
             checklist: [],
             scopeItems: []
         };
-        // Checklist
         for(let i = 0; i < checkPoints.length; i++) {
             const selected = document.querySelector(`input[name="status_${i}"]:checked`);
             const statusVal = selected ? selected.value : "";
@@ -543,7 +443,6 @@
             const remark = remarkField ? remarkField.value : "";
             reportData.checklist.push({ status: statusVal, remark: remark });
         }
-        // Scope rows
         const scopeRows = document.querySelectorAll("#scopeBody tr");
         scopeRows.forEach(row => {
             const mmtVal = row.querySelector('.scope-mmt')?.value || "";
@@ -565,8 +464,6 @@
         document.getElementById("contactNo").value = data.contact || "";
         document.getElementById("reportDate").value = data.date || "";
         document.getElementById("attendedby").value = data.technician || "";
-        
-        // checklist restore
         if(data.checklist && data.checklist.length === checkPoints.length) {
             for(let i = 0; i < checkPoints.length; i++) {
                 const ch = data.checklist[i];
@@ -581,18 +478,12 @@
                 if(remarkField) remarkField.value = ch.remark || "";
             }
         }
-        // scope restore
-        if(data.scopeItems && data.scopeItems.length) {
-            loadScopeFromData(data.scopeItems);
-        } else {
-            loadScopeFromData(null);
-        }
+        if(data.scopeItems && data.scopeItems.length) loadScopeFromData(data.scopeItems);
+        else loadScopeFromData(null);
     }
 
-    // ======================= 4. CLEAR ALL FORM =======================
     function clearAllFormData() {
         if(confirm("⚠️ WARNING: This will erase all entered data, checklist selections, scope items, and signatures. Are you sure?")) {
-            // Clear all text inputs & radios
             document.getElementById("custName").value = "";
             document.getElementById("machineModel").value = "";
             document.getElementById("contactPerson").value = "";
@@ -601,39 +492,32 @@
             document.getElementById("contactNo").value = "";
             document.getElementById("reportDate").value = new Date().toISOString().slice(0,10);
             document.getElementById("attendedby").value = "";
-            
-            // Clear all radio buttons
             for(let i = 0; i < checkPoints.length; i++) {
                 const radios = document.querySelectorAll(`input[name="status_${i}"]`);
                 radios.forEach(r => r.checked = false);
                 const remarkField = document.querySelector(`.remark-input[data-idx="${i}"]`);
                 if(remarkField) remarkField.value = "";
             }
-            // Reset scope to default 3 rows
             loadScopeFromData(null);
-            // Clear signatures from localStorage and images
             localStorage.removeItem("tech_signature");
             localStorage.removeItem("cust_signature");
             document.getElementById("techSignImg").src = "";
             document.getElementById("custSignImg").src = "";
-            document.getElementById("techSignImg").style.background = "#fef9e6";
-            document.getElementById("custSignImg").style.background = "#fef9e6";
-            // Save cleared state
             saveAllFormData();
             alert("✅ All form data cleared successfully!");
         }
     }
 
-    // ======================= 5. SIGNATURE HANDLING =======================
+    // Signature handling
     let activeSignatureType = null;
     const modal = document.getElementById("signModal");
     const canvas = document.getElementById("signatureCanvas");
     let ctx = canvas.getContext("2d");
     let drawing = false;
 
-    function resizeCanvasElement() {
-        const containerWidth = Math.min(400, window.innerWidth - 80);
-        canvas.width = containerWidth;
+    function resizeCanvasForModal() {
+        const maxWidth = Math.min(400, window.innerWidth - 80);
+        canvas.width = maxWidth;
         canvas.height = 160;
         ctx = canvas.getContext("2d");
         ctx.fillStyle = "#fff";
@@ -662,175 +546,118 @@
         return { x, y };
     }
 
-    function startDraw(e) {
-        e.preventDefault();
-        drawing = true;
-        const { x, y } = getCanvasCoords(e);
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-    }
-
-    function drawMove(e) {
-        if (!drawing) return;
-        e.preventDefault();
-        const { x, y } = getCanvasCoords(e);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-    }
-
-    function stopDraw() {
-        drawing = false;
-        ctx.beginPath();
-    }
-
-    function clearCanvas() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = "#0f172a";
-        ctx.lineWidth = 2.5;
-    }
-
+    function startDraw(e) { e.preventDefault(); drawing = true; const { x, y } = getCanvasCoords(e); ctx.beginPath(); ctx.moveTo(x, y); }
+    function drawMove(e) { if (!drawing) return; e.preventDefault(); const { x, y } = getCanvasCoords(e); ctx.lineTo(x, y); ctx.stroke(); }
+    function stopDraw() { drawing = false; ctx.beginPath(); }
+    function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.strokeStyle = "#0f172a"; ctx.lineWidth = 2.5; }
+    
     function openSignatureModal(type) {
         activeSignatureType = type;
-        resizeCanvasElement();
+        resizeCanvasForModal();
         clearCanvas();
         modal.style.display = "flex";
         document.body.style.overflow = "hidden";
-        // Load existing signature into canvas if present
         const existingImg = (type === 'tech') ? localStorage.getItem("tech_signature") : localStorage.getItem("cust_signature");
-        if (existingImg) {
-            const img = new Image();
-            img.onload = () => {
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            };
-            img.src = existingImg;
-        }
+        if (existingImg) { const img = new Image(); img.onload = () => { ctx.drawImage(img, 0, 0, canvas.width, canvas.height); }; img.src = existingImg; }
     }
-
+    
     function saveSignature() {
         if (!activeSignatureType) return;
         const dataURL = canvas.toDataURL("image/png");
-        if (activeSignatureType === 'tech') {
-            localStorage.setItem("tech_signature", dataURL);
-            document.getElementById("techSignImg").src = dataURL;
-        } else {
-            localStorage.setItem("cust_signature", dataURL);
-            document.getElementById("custSignImg").src = dataURL;
-        }
-        closeModal();
-        saveAllFormData();
+        if (activeSignatureType === 'tech') { localStorage.setItem("tech_signature", dataURL); document.getElementById("techSignImg").src = dataURL; }
+        else { localStorage.setItem("cust_signature", dataURL); document.getElementById("custSignImg").src = dataURL; }
+        closeModal(); saveAllFormData();
     }
-
-    function closeModal() {
-        modal.style.display = "none";
-        document.body.style.overflow = "";
-        activeSignatureType = null;
-    }
-
-    function loadSignatures() {
-        const techSig = localStorage.getItem("tech_signature");
-        const custSig = localStorage.getItem("cust_signature");
-        if(techSig) document.getElementById("techSignImg").src = techSig;
-        if(custSig) document.getElementById("custSignImg").src = custSig;
-    }
-
+    
+    function closeModal() { modal.style.display = "none"; document.body.style.overflow = ""; activeSignatureType = null; }
     function attachCanvasEvents() {
-        canvas.addEventListener("mousedown", startDraw);
-        canvas.addEventListener("mousemove", drawMove);
-        canvas.addEventListener("mouseup", stopDraw);
-        canvas.addEventListener("mouseleave", stopDraw);
+        canvas.addEventListener("mousedown", startDraw); canvas.addEventListener("mousemove", drawMove);
+        canvas.addEventListener("mouseup", stopDraw); canvas.addEventListener("mouseleave", stopDraw);
         canvas.addEventListener("touchstart", startDraw, { passive: false });
-        canvas.addEventListener("touchmove", drawMove, { passive: false });
-        canvas.addEventListener("touchend", stopDraw);
+        canvas.addEventListener("touchmove", drawMove, { passive: false }); canvas.addEventListener("touchend", stopDraw);
+    }
+    function loadSignatures() { const techSig = localStorage.getItem("tech_signature"); const custSig = localStorage.getItem("cust_signature"); if(techSig) document.getElementById("techSignImg").src = techSig; if(custSig) document.getElementById("custSignImg").src = custSig; }
+
+    function getAndIncrementReportNumber() {
+        let num = localStorage.getItem("report_counter");
+        if(!num || isNaN(parseInt(num))) { num = 1; } else { num = parseInt(num) + 1; }
+        localStorage.setItem("report_counter", num);
+        return "ACE-" + String(num).padStart(5,'0');
     }
 
-    // ======================= 6. PDF GENERATION =======================
+    // முக்கியமான பகுதி: PDF உருவாக்கும் போது button-ஐ மறைத்து, முடிந்ததும் மீண்டும் காட்டுதல்
     async function generatePDF() {
-
         saveAllFormData();
-
+        
+        // PDF-க்கு முன் "Add Scope Row" button-ஐ மறைக்கவும் (output-ல தெரியாது)
+        const addBtnContainer = document.getElementById("addScopeButtonContainer");
+        const originalDisplay = addBtnContainer.style.display;
+        addBtnContainer.style.display = "none";  // PDF-ல இந்த button இருக்காது
+        
+        const customer = document.getElementById("custName").value || "Customer";
+        const model = document.getElementById("machineModel").value || "Model";
+        const slno = document.getElementById("machineSN").value || "SLNO";
+        const date = document.getElementById("reportDate").value || new Date().toISOString().slice(0,10);
+        const reportNo = getAndIncrementReportNumber();
+        const safe = (str) => str.replace(/[^a-z0-9]/gi, '_');
+        const fileName = `${safe(customer)}_${safe(model)}_${safe(slno)}_${reportNo}_${date}.pdf`;
         const element = document.getElementById("report");
-
-        const btn = document.querySelector(".btn-download");
+        const btn = document.getElementById("downloadPdfBtn");
         const originalText = btn.innerText;
-
         btn.innerText = "⏳ Generating PDF...";
         btn.disabled = true;
-
+        
         try {
-
-            const canvasPDF = await html2canvas(element, {
-                scale: 1.3,                 // 🔻 REDUCED
-                backgroundColor: "#ffffff",
-                logging: false
-            });
-
-            // 🔻 JPEG compression
-            const imgData = canvasPDF.toDataURL("image/jpeg", 0.7);
-
+            const canvasPDF = await html2canvas(element, { scale: 1.5, backgroundColor: "#ffffff", logging: false, useCORS: false, windowWidth: element.scrollWidth });
+            const imgData = canvasPDF.toDataURL("image/jpeg", 0.9);
             const { jsPDF } = window.jspdf;
-
-            const pdf = new jsPDF({
-                orientation: 'portrait',
-                unit: 'mm',
-                format: 'a4',
-                compress: true            // 🔻 ENABLE COMPRESS
-            });
-
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
-
             const imgProps = pdf.getImageProperties(imgData);
             const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
             let heightLeft = imgHeight;
             let position = 0;
-
             pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight);
-
             heightLeft -= pdfHeight;
-
-            while (heightLeft > 0) {
-                position = heightLeft - imgHeight;
-                pdf.addPage();
-                pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight);
-                heightLeft -= pdfHeight;
-            }
-
-            pdf.save("TPM_Report_Optimized.pdf");
-
-        } catch (err) {
-            console.error(err);
-            alert("PDF generation error");
-        } finally {
+            while (heightLeft > 0) { position = heightLeft - imgHeight; pdf.addPage(); pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight); heightLeft -= pdfHeight; }
+            pdf.save(fileName);
+        } catch (err) { console.error("PDF error:", err); alert("PDF generation failed: " + (err.message || "Unknown error")); }
+        finally {
             btn.innerText = originalText;
             btn.disabled = false;
+            // மீண்டும் button-ஐ காட்டவும் (website-ல இயல்பாக தெரியும்)
+            addBtnContainer.style.display = originalDisplay;
         }
     }
 
-    // ======================= 7. INITIALIZATION =======================
+    function attachAutoSave() {
+        const textInputs = ["custName", "machineModel", "contactPerson", "machineSN", "dept", "contactNo"];
+        textInputs.forEach(id => { const el = document.getElementById(id); if(el) el.addEventListener("input", saveAllFormData); });
+        document.getElementById("reportDate")?.addEventListener("change", saveAllFormData);
+        document.getElementById("attendedby")?.addEventListener("change", saveAllFormData);
+        document.getElementById("checklistBody")?.addEventListener("change", (e) => { if(e.target.type === 'radio') saveAllFormData(); });
+        document.getElementById("checklistBody")?.addEventListener("input", (e) => { if(e.target.classList.contains('remark-input')) saveAllFormData(); });
+        document.getElementById("scopeBody")?.addEventListener("input", (e) => { if(e.target.classList.contains('scope-mmt') || e.target.classList.contains('scope-cust')) saveAllFormData(); });
+    }
+
     function init() {
         buildChecklistTable();
         loadScopeFromData(null);
         loadAllFormData();
         loadSignatures();
         attachCanvasEvents();
-        
-        if(!document.getElementById("reportDate").value) {
-            const today = new Date().toISOString().slice(0,10);
-            document.getElementById("reportDate").value = today;
-        }
-        
-        const infoInputs = document.querySelectorAll(".info-grid input");
-        infoInputs.forEach(inp => inp.addEventListener("input", saveAllFormData));
-        document.getElementById("addScopeBtn").addEventListener("click", () => {
-            addScopeRow("", "");
-            saveAllFormData();
-        });
+        if(!document.getElementById("reportDate").value) { document.getElementById("reportDate").value = new Date().toISOString().slice(0,10); }
+        attachAutoSave();
+        document.getElementById("addScopeBtn")?.addEventListener("click", () => { addScopeRow("", ""); saveAllFormData(); });
+        document.getElementById("downloadPdfBtn")?.addEventListener("click", generatePDF);
+        document.getElementById("clearAllBtn")?.addEventListener("click", clearAllFormData);
+        document.getElementById("clearCanvasBtn")?.addEventListener("click", clearCanvas);
+        document.getElementById("saveSigBtn")?.addEventListener("click", saveSignature);
+        document.getElementById("closeModalBtn")?.addEventListener("click", closeModal);
+        window.openSignatureModal = openSignatureModal;
         saveAllFormData();
     }
-    
     init();
 </script>
 </body>
