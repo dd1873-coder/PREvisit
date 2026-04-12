@@ -1,377 +1,820 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>TPM Pre-Visit Report | Micromatic Machine Tools</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+        .info-item input {
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: unset !important;
+        }
 
-<style>
-body { font-family: Arial; background:#eee; }
+        body {
+            font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+            background: #e2e8f0;
+            margin: 0;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-.form-sheet {
-    width: 900px;
-    max-width:95%;
-    background:#fff;
-    margin:auto;
-    padding:20px;
-    border:1px solid #000;
-}
+        .form-sheet {
+            max-width: 1350px;
+            width: 100%;
+            background: white;
+            margin: 0 auto 30px auto;
+            padding: 25px 30px;
+            border-radius: 16px;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.2);
+            border: 1px solid #cbd5e1;
+        }
 
-h2,h3 { text-align:center; }
+        h2 {
+            text-align: center;
+            margin: 0 0 5px 0;
+            color: #0f3b5c;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
 
-table {
-    width:100%;
-    border-collapse: collapse;
-    font-size:12px;
-}
+        h3 {
+            text-align: center;
+            margin: 0 0 20px 0;
+            color: #1e4663;
+            font-size: 1.2rem;
+            font-weight: 500;
+            border-bottom: 2px solid #cbd5e1;
+            display: inline-block;
+            width: auto;
+            padding-bottom: 5px;
+        }
 
-th, td {
-    border:1px solid #000;
-    padding:5px;
-}
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px 20px;
+            background: #f8fafc;
+            padding: 18px 22px;
+            border-radius: 16px;
+            margin: 15px 0 20px 0;
+            border: 1px solid #e2e8f0;
+        }
 
-input {
-    width:100%;
-    border:none;
-    outline:none;
-}
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
 
-/* SIGNATURE PREVIEW */
-.signature-box{
-    border:1px solid #000;
-    height:120px;
-    width:100%;
-    object-fit:contain;
-    cursor:pointer;
-}
+        .info-item label {
+            font-weight: 700;
+            min-width: 110px;
+            color: #1e293b;
+            font-size: 0.85rem;
+        }
 
-/* MODAL */
-#signModal{
-    display:none;
-    position:fixed;
-    top:0;
-    left:0;
-    width:100vw;
-    height:100vh;
-    background:rgba(0,0,0,0.7);
-    z-index:9999;
+        .info-item input, .info-item input[type="date"] {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            background: white;
+            transition: 0.2s;
+            font-family: inherit;
+        }
 
-    display:flex;
-    justify-content:center;
-    align-items:center;
+        .info-item input:focus {
+            outline: none;
+            border-color: #2c6e9e;
+            box-shadow: 0 0 0 2px rgba(44,110,158,0.2);
+        }
 
-    overflow:hidden;
-}
+        /* Table Styles - BORDERS VISIBLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            margin: 18px 0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            table-layout: fixed;
+        }
 
-.modal-box{
-    background:#fff;
-    padding:15px;
-    width:95%;
-    max-width:400px;
-    border-radius:10px;
-    text-align:center;
-}
+        th, td {
+            border: 1.5px solid #1e293b;
+            padding: 10px 8px;
+            vertical-align: top;
+        }
 
-/* LOCK BODY SCROLL */
-body.modal-open{
-    overflow:hidden;
-}
+        th {
+            background-color: #eef2ff;
+            font-weight: 700;
+            color: #0c4a6e;
+            text-align: center;
+        }
 
-button{
-    margin:8px;
-    padding:8px 15px;
-}
-</style>
+        td {
+            background-color: #ffffff;
+            word-wrap: break-word;
+        }
+
+        /* Column widths for checklist */
+        .checklist-table th:nth-child(1) { width: 6%; }
+        .checklist-table th:nth-child(2) { width: 44%; }
+        .checklist-table th:nth-child(3) { width: 8%; }
+        .checklist-table th:nth-child(4) { width: 10%; }
+        .checklist-table th:nth-child(5) { width: 32%; }
+
+        /* Radio cells */
+        .radio-cell {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        input[type="radio"] {
+            transform: scale(1.2);
+            margin: 0;
+            accent-color: #2c6e9e;
+            cursor: pointer;
+        }
+
+        /* Input fields inside table - FIXED to show full text */
+        .remark-input, .scope-mmt, .scope-cust {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            background: #fefce8;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-family: inherit;
+            transition: 0.15s;
+            resize: vertical;
+            min-height: 45px;
+            line-height: 1.4;
+        }
+
+        .remark-input:focus, .scope-mmt:focus, .scope-cust:focus {
+            outline: none;
+            border-color: #2c6e9e;
+            background: #ffffff;
+            box-shadow: 0 0 0 2px rgba(44,110,158,0.1);
+        }
+
+        /* Scope table column widths */
+        .scope-table th:nth-child(1) { width: 10%; }
+        .scope-table th:nth-child(2) { width: 45%; }
+        .scope-table th:nth-child(3) { width: 45%; }
+
+        /* Signature area */
+        .signature-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-top: 28px;
+            margin-bottom: 15px;
+            justify-content: space-between;
+        }
+
+        .sign-card {
+            flex: 1;
+            min-width: 220px;
+            text-align: center;
+        }
+
+        .signature-box {
+            border: 2px dashed #475569;
+            border-radius: 16px;
+            height: 130px;
+            width: 100%;
+            object-fit: contain;
+            background: #fef9e6;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .signature-box:hover {
+            border-color: #2c6e9e;
+            background: #f1f5f9;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0 10px;
+        }
+
+        button {
+            background: #1e4663;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: 0.2s;
+            font-family: inherit;
+        }
+
+        button:hover {
+            background: #0f2f48;
+            transform: scale(0.97);
+        }
+
+        .btn-add {
+            background: #2b6e4c;
+            margin-top: 5px;
+        }
+
+        .btn-download {
+            background: #0f3b5c;
+            padding: 12px 28px;
+            font-size: 1rem;
+        }
+
+        .btn-clear {
+            background: #9e2d2f;
+        }
+
+        .btn-clear:hover {
+            background: #7f2224;
+        }
+
+        /* MODAL for signature */
+        #signModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(3px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 20px;
+            border-radius: 28px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 35px black;
+        }
+
+        canvas {
+            width: 100%;
+            height: auto;
+            background: white;
+            border-radius: 12px;
+            touch-action: none;
+            border: 2px solid #334155;
+            cursor: crosshair;
+        }
+
+        .modal-buttons {
+            margin-top: 15px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.7rem;
+            color: #475569;
+        }
+
+        @media (max-width: 800px) {
+            .form-sheet {
+                padding: 16px;
+            }
+            th, td {
+                font-size: 0.7rem;
+                padding: 6px;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            .remark-input, .scope-mmt, .scope-cust {
+                font-size: 0.7rem;
+                padding: 6px;
+                min-height: 40px;
+            }
+        }
+    </style>
 </head>
-
 <body>
 
 <div id="report" class="form-sheet">
+    <h2>🔧 Micromatic Machine Tools Pvt Ltd</h2> 
+    <h2>TPM PREVENTIVE MAINTENANCE <br> PRE-VISIT REPORT (ACE Series)</h2>
 
-<h2>Micromatic Machine Tools Pvt Ltd</h2>
-<h3>TPM PRE-VISIT REPORT-ACE</h3>
+    <!-- Customer & machine details grid -->
+    <div class="info-grid">
+        <div class="info-item"><label>🏭 Customer Name :</label><input type="text" id="custName" placeholder="e.g., ABC Industries" value=""></div>
+        <div class="info-item"><label>⚙️ Machine Model :</label><input type="text" id="machineModel" placeholder="Vantage 1000 LM" value="Vantage 1000 LM"></div>
+        <div class="info-item"><label>👤 Contact Person :</label><input type="text" id="contactPerson" placeholder="Mr. Sharma" value=""></div>
+        <div class="info-item"><label>🔢 Machine SL.NO :</label><input type="text" id="machineSN" placeholder="MMT-2345" value=""></div>
+        <div class="info-item"><label>📂 Department :</label><input type="text" id="dept" placeholder="Production / Maintenance" value=""></div>
+        <div class="info-item"><label>📞 Contact No :</label><input type="text" id="contactNo" placeholder="+91 9876543210" value=""></div>
+        <div class="info-item"><label>📅 Date :</label><input type="date" id="reportDate" value=""></div>
+        <div class="info-item"><label>👨‍🔧 Technician :</label><input type="text" id="techName" placeholder="Dinesh T" value="Dinesh T"></div>
+    </div>
 
-<table>
-<tr><td>Customer Name</td><td><input id="cust"></td>
-<td>Machine Model</td><td><input id="model"></td></tr>
+    <!-- Main checklist table (bordered) with proper column widths -->
+    <table class="checklist-table" id="checklistTable">
+        <thead>
+            <tr>
+                <th>S.No</th>
+                <th>Check Point Description</th>
+                <th>✅ OK</th>
+                <th>❌ NOT OK</th>
+                <th>Remarks / Observations</th>
+            </tr>
+        </thead>
+        <tbody id="checklistBody"></tbody>
+    </table>
 
-<tr><td>Contact Person</td><td><input id="person"></td>
-<td>Machine SL.NO</td><td><input id="sl"></td></tr>
+    <!-- Scope of work table -->
+    <div style="margin-top: 10px;">
+        <h3 style="display: block; text-align: center;">🔩 Scope of Work / Spares Recommendation</h3>
+    </div>
+    <table class="scope-table" id="scopeTable">
+        <thead>
+            <tr><th>S.No</th><th>MMT Scope (Action / Spares)</th><th>Customer Scope / Remarks</th></tr>
+        </thead>
+        <tbody id="scopeBody"></tbody>
+    </table>
+    <div style="text-align: left; margin-bottom: 10px;">
+        <button type="button" class="btn-add" id="addScopeBtn">➕ Add Scope Row</button>
+    </div>
 
-<tr><td>Department</td><td><input id="dept"></td>
-<td>Contact No</td><td><input id="contact"></td></tr>
-
-<tr><td>Date</td><td><input type="date" id="date"></td>
-<td>Attended By</td><td><input id="tech"></td></tr>
-</table>
-
-<br>
-
-<table id="checkTable">
-<tr>
-<th>S.No</th><th>Check Point</th><th>OK</th><th>Not OK</th><th>Remarks</th>
-</tr>
-</table>
-
-<br>
-
-<h3>Scope of Work / Spares</h3>
-<table id="scopeTable">
-<tr>
-<th>S.No</th><th>MMT Scope</th><th>Customer Scope</th>
-</tr>
-</table>
-
-<button onclick="addScopeRow()">+ Add Scope</button>
-
-<br><br>
-
-<h4>MMT Signature</h4>
-<img id="techPreview" class="signature-box" onclick="openSign('tech')">
-
-<h4>Customer Signature</h4>
-<img id="custPreview" class="signature-box" onclick="openSign('cust')">
-
+    <!-- Signature Section -->
+    <div class="signature-row">
+        <div class="sign-card">
+            <strong>👨‍🔧 MMT Service Engineer Signature</strong>
+            <img id="techSignImg" class="signature-box" alt="MMT signature" onclick="openSignatureModal('tech')">
+        </div>
+        <div class="sign-card">
+            <strong>🏢 Customer Signature (Acceptance)</strong>
+            <img id="custSignImg" class="signature-box" alt="Customer signature" onclick="openSignatureModal('cust')">
+        </div>
+    </div>
+    <footer>✔️ Tap on signature box to draw. All data auto-saves locally.</footer>
 </div>
 
-<div style="text-align:center;">
-<button onclick="downloadPDF()">Download PDF</button>
+<!-- Action Buttons -->
+<div class="btn-group">
+    <button class="btn-download" onclick="generatePDF()">📄 Download TPM Report (PDF)</button>
+    <button class="btn-clear" onclick="clearAllFormData()">🗑️ Clear All Form Data</button>
 </div>
 
-<!-- SIGNATURE MODAL -->
+<!-- Signature Modal -->
 <div id="signModal">
-<div class="modal-box">
-<h3>Draw Signature</h3>
-<canvas id="signPad" style="border:1px solid #000;width:100%;height:200px;"></canvas>
-<br>
-<button onclick="clearPad()">Clear</button>
-<button onclick="savePad()">Save</button>
-<button onclick="closePad()">Cancel</button>
-</div>
+    <div class="modal-box">
+        <h3>✍️ Draw Signature</h3>
+        <canvas id="signatureCanvas" width="400" height="180" style="width:100%; height:auto; max-width:400px; background:#fff; touch-action:none;"></canvas>
+        <div class="modal-buttons">
+            <button onclick="clearCanvas()">🧽 Clear</button>
+            <button onclick="saveSignature()">💾 Save Signature</button>
+            <button onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
 </div>
 
 <script>
+    // ======================= 1. CHECKLIST DATA (35 points from original) =======================
+    const checkPoints = [
+        "Machine in Running Condition", "Oil Leakage in Hydraulic Tank", "Oil Leakage in Hydraulic Circuit, Hose Condition", "Noise in Hydraulic System",
+        "Functioning of Hydraulic System", "Oil Leakage in Lubrication Tank", "Oil Leakage in Lubrication Circuit / Hoses", "Functioning of Lubrication pressure gauge",
+        "Coolant Leakage, if any", "Availability of Y-Strainer & its Condition", "Chucking Cylinder oil Leakage", "Functioning of Gauge Isolator",
+        "Functioning of Accumulator", "Tailstock Working Condition", "Spindle Encoder Condition", "Noise in Spindle",
+        "Operator Control Panel Condition (buttons, beading)", "Turret condition (Coolant, sight glass, Noise)", "Turret Cable Condition",
+        "Availability of Ac Relay in Turret Circuit", "Foot Switch Condition", "Machine door condition", "A/C Condition (Functioning, Grill, Mesh)",
+        "Electrical Panel Condition", "Cooling fans Condition (Spindle/Heat Sink)", "Spindle, Axis cables Condition", "Machine Incoming Supply, E-N Voltage",
+        "Axis Wiper Condition", "Axis Condition - Noise", "Ball Screw Condition", "Size Variation, Slide Play, Backlash", "Belt Condition (Axis, Spindle, Encoder)",
+        "Machine lamp condition", "Condition of System Screen", "Battery Condition (System & Drive)"
+    ];
 
-// ---------- CHECKLIST ----------
-const points = [
-"Machine in Running Condition","Oil Leakage in Hydraulic Tank","Oil Leakage in Hydraulic Circuit, Hose Condition, etc.,","Noise in Hydraulic System",
-"Functioning of Hydraulic System","Oil Leakage in Lubrication Tank","Oil Leakage in Lubrication Circuit, Hose Condition, etc.,","Functioning of Lubrication pressure gauge","Coolant Leakage, if any",
-"Availability of Y-Strainer & it’s Condition","Chucking Cylinder oil Leakage","Functioning of Gauge Isolator","Functioning of Accumulator","Tailstock Working Condition",
-"Spindle Encoder Condition","Noise in Spindle","Operator Control Panel Condition, beading, etc.,","Turret condition Coolant, insight glass, Noise, etc.,",
-"Turret Cable Condition","Availability of Ac Relay in Turret Circuit","Foot Switch Condition","Machine door condition",
-"A/C Condition-Functioning, Grill, Mesh, etc.,","Electrical Panel Condition","Cooling fans Condition - Spindle/Heat Sink, system, etc.,","Spindle, Axis cables Condition","Machine Incoming Supply, E-N Voltage, etc.,",
-"Axis Wiper Condition","Axis Condition - Noise","Ball Screw Condition","Size Variation, Slide Play, Backlash, if any","Belt Condition - Axis, Spindle, Encoder, etc.,",
-"Machine lamp condition","Condition of System Screen","Battery Condition - System & Drive"
-];
+    const checklistBody = document.getElementById("checklistBody");
 
-points.forEach((p,i)=>{
-checkTable.innerHTML+=`
-<tr>
-<td>${i+1}</td>
-<td>${p}</td>
-<td><input type="radio" name="r${i}" value="OK" onchange="saveData()"></td>
-<td><input type="radio" name="r${i}" value="NOTOK" onchange="saveData()"></td>
-<td><input id="remark${i}" oninput="saveData()"></td>
-</tr>`;
-});
-
-// ---------- SCOPE ----------
-let scopeCount=0;
-
-function addScopeRow(data={}){
-scopeCount++;
-scopeTable.innerHTML+=`
-<tr>
-<td>${scopeCount}</td>
-<td><input value="${data.mmt||''}" oninput="saveData()"></td>
-<td><input value="${data.customer||''}" oninput="saveData()"></td>
-</tr>`;
-}
-
-// ---------- SIGNATURE ----------
-let currentSign = "";
-const canvas = document.getElementById("signPad");
-const ctx = canvas.getContext("2d");
-
-// FIX DPI
-function resizeCanvas(){
-    const ratio = window.devicePixelRatio || 1;
-    canvas.width = canvas.offsetWidth * ratio;
-    canvas.height = canvas.offsetHeight * ratio;
-    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-}
-resizeCanvas();
-
-let drawing = false;
-
-// GET POSITION
-function getPos(e){
-    const rect = canvas.getBoundingClientRect();
-    return {
-        x:(e.touches ? e.touches[0].clientX : e.clientX) - rect.left,
-        y:(e.touches ? e.touches[0].clientY : e.clientY) - rect.top
-    };
-}
-
-// START DRAW
-function startDraw(e){
-    e.preventDefault(); // 🚫 STOP SCROLL
-    drawing = true;
-    const p = getPos(e);
-    ctx.beginPath();
-    ctx.moveTo(p.x, p.y);
-}
-
-// DRAW
-function draw(e){
-    if(!drawing) return;
-    e.preventDefault(); // 🚫 STOP SCROLL
-    const p = getPos(e);
-    ctx.lineTo(p.x, p.y);
-    ctx.stroke();
-}
-
-// STOP DRAW
-function stopDraw(e){
-    drawing = false;
-}
-
-// EVENTS (IMPORTANT: passive:false)
-canvas.addEventListener("mousedown", startDraw);
-canvas.addEventListener("mousemove", draw);
-canvas.addEventListener("mouseup", stopDraw);
-
-canvas.addEventListener("touchstart", startDraw, {passive:false});
-canvas.addEventListener("touchmove", draw, {passive:false});
-canvas.addEventListener("touchend", stopDraw);
-
-// OPEN MODAL
-function openSign(type){
-    currentSign = type;
-    document.getElementById("signModal").style.display = "flex";
-    document.body.classList.add("modal-open"); // LOCK SCROLL
-
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.beginPath(); // ✅ FIX backward issue
-}
-
-// CLOSE
-function closePad(){
-    document.getElementById("signModal").style.display = "none";
-    document.body.classList.remove("modal-open");
-}
-
-// CLEAR
-function clearPad(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.beginPath();
-}
-
-// SAVE
-function savePad(){
-    const data = canvas.toDataURL("image/png");
-
-    if(currentSign === "tech"){
-        document.getElementById("techPreview").src = data;
-        localStorage.setItem("techSign", data);
-    } else {
-        document.getElementById("custPreview").src = data;
-        localStorage.setItem("custSign", data);
+    function buildChecklistTable() {
+        checklistBody.innerHTML = "";
+        checkPoints.forEach((point, idx) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td style="text-align:center; font-weight:500; vertical-align:middle;">${idx+1}</td>
+                <td style="vertical-align:middle;">${point}</td>
+                <td class="radio-cell" style="text-align:center; vertical-align:middle;"><input type="radio" name="status_${idx}" value="OK" class="radio-ok"></td>
+                <td class="radio-cell" style="text-align:center; vertical-align:middle;"><input type="radio" name="status_${idx}" value="NOTOK" class="radio-notok"></td>
+                <td><textarea class="remark-input" data-idx="${idx}" rows="2" placeholder="Enter detailed remarks, observations, leakage, noise level, etc..." style="width:100%; resize:vertical;"></textarea></td>
+            `;
+            checklistBody.appendChild(row);
+        });
+        attachChecklistEvents();
     }
 
-    closePad();
-}
+    function convertInputsToText() {
+        document.querySelectorAll("input").forEach(input => {
+            const span = document.createElement("span");
+            span.innerText = input.value || "";
+            span.style.display = "block";
+            span.style.minHeight = "20px";
+            span.style.padding = "5px";
+            span.style.fontSize = "12px";
+            span.style.wordBreak = "break-word";
 
-// LOAD
-function loadSignature(){
-    let t = localStorage.getItem("techSign");
-    let c = localStorage.getItem("custSign");
+            input.parentNode.replaceChild(span, input);
+        });
+    }
 
-    if(t) document.getElementById("techPreview").src = t;
-    if(c) document.getElementById("custPreview").src = c;
-}
+    function attachChecklistEvents() {
+        document.querySelectorAll(".info-item input").forEach(input => {
+            input.addEventListener("input", function () {
+                this.style.height = "auto";
+                this.style.height = (this.scrollHeight) + "px";
+            });
+        });
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener("change", () => saveAllFormData());
+        });
+        document.querySelectorAll('.remark-input').forEach(inp => {
+            inp.addEventListener("input", () => saveAllFormData());
+        });
 
-// ---------- SAVE ----------
-function saveData(){
-let d={
-cust:cust.value,model:model.value,person:person.value,
-sl:sl.value,dept:dept.value,contact:contact.value,
-date:date.value,tech:tech.value,
-checklist:[],scope:[]
-};
+    }
 
-points.forEach((p,i)=>{
-let s=document.querySelector(`input[name="r${i}"]:checked`);
-d.checklist.push({status:s?s.value:"",remark:document.getElementById(`remark${i}`).value});
-});
+    // ======================= 2. SCOPE TABLE DYNAMIC =======================
+    const scopeBody = document.getElementById("scopeBody");
+    let scopeCounter = 0;
 
-document.querySelectorAll("#scopeTable tr").forEach((r,i)=>{
-if(i===0)return;
-let inp=r.querySelectorAll("input");
-d.scope.push({mmt:inp[0].value,customer:inp[1].value});
-});
+    function addScopeRow(mmtVal = "", custVal = "") {
+        scopeCounter++;
+        const newRow = document.createElement("tr");
+        newRow.innerHTML = `
+            <td style="text-align:center; vertical-align:middle;">${scopeCounter}</td>
+            <td><textarea class="scope-mmt" rows="2" placeholder="e.g., Replace hydraulic filter, adjust belts, inspect spindle..." style="width:100%; resize:vertical;">${escapeHtml(mmtVal)}</textarea></td>
+            <td><textarea class="scope-cust" rows="2" placeholder="Customer action / spares to arrange / timeline" style="width:100%; resize:vertical;">${escapeHtml(custVal)}</textarea></td>
+        `;
+        scopeBody.appendChild(newRow);
+        const mmtInp = newRow.querySelector('.scope-mmt');
+        const custInp = newRow.querySelector('.scope-cust');
+        mmtInp.addEventListener("input", saveAllFormData);
+        custInp.addEventListener("input", saveAllFormData);
+    }
 
-localStorage.setItem("reportData",JSON.stringify(d));
-}
+    function loadScopeFromData(savedScopes) {
+        scopeBody.innerHTML = "";
+        scopeCounter = 0;
+        if (savedScopes && savedScopes.length > 0) {
+            savedScopes.forEach(item => {
+                addScopeRow(item.mmt || "", item.customer || "");
+            });
+        } else {
+            // default 3 meaningful rows
+            addScopeRow("Inspect hydraulic oil & filter condition, check for contamination", "Provide maintenance window & arrange oil if required");
+            addScopeRow("Check spindle drive belts tension and wear condition", "Arrange machine shutdown for 2 hours");
+            addScopeRow("Coolant tank cleaning & Y-strainer servicing", "Support for coolant disposal and fresh coolant");
+        }
+    }
 
-// ---------- LOAD ----------
-function loadData(){
-let d=JSON.parse(localStorage.getItem("reportData"));
+    function escapeHtml(str) {
+        if(!str) return "";
+        return str.replace(/[&<>]/g, function(m) {
+            if(m === '&') return '&amp;';
+            if(m === '<') return '&lt;';
+            if(m === '>') return '&gt;';
+            return m;
+        });
+    }
 
-scopeTable.innerHTML=`<tr><th>S.No</th><th>MMT Scope</th><th>Customer Scope</th></tr>`;
-scopeCount=0;
+    // ======================= 3. LOCAL STORAGE (SAVE/LOAD) =======================
+    function saveAllFormData() {
+        const reportData = {
+            customer: document.getElementById("custName").value,
+            model: document.getElementById("machineModel").value,
+            person: document.getElementById("contactPerson").value,
+            slNo: document.getElementById("machineSN").value,
+            dept: document.getElementById("dept").value,
+            contact: document.getElementById("contactNo").value,
+            date: document.getElementById("reportDate").value,
+            technician: document.getElementById("techName").value,
+            checklist: [],
+            scopeItems: []
+        };
+        // Checklist
+        for(let i = 0; i < checkPoints.length; i++) {
+            const selected = document.querySelector(`input[name="status_${i}"]:checked`);
+            const statusVal = selected ? selected.value : "";
+            const remarkField = document.querySelector(`.remark-input[data-idx="${i}"]`);
+            const remark = remarkField ? remarkField.value : "";
+            reportData.checklist.push({ status: statusVal, remark: remark });
+        }
+        // Scope rows
+        const scopeRows = document.querySelectorAll("#scopeBody tr");
+        scopeRows.forEach(row => {
+            const mmtVal = row.querySelector('.scope-mmt')?.value || "";
+            const custVal = row.querySelector('.scope-cust')?.value || "";
+            reportData.scopeItems.push({ mmt: mmtVal, customer: custVal });
+        });
+        localStorage.setItem("tpm_report_master", JSON.stringify(reportData));
+    }
 
-if(!d){
-for(let i=0;i<3;i++) addScopeRow();
-return;
-}
+    function loadAllFormData() {
+        const saved = localStorage.getItem("tpm_report_master");
+        if(!saved) return;
+        const data = JSON.parse(saved);
+        document.getElementById("custName").value = data.customer || "";
+        document.getElementById("machineModel").value = data.model || "Vantage 1000 LM";
+        document.getElementById("contactPerson").value = data.person || "";
+        document.getElementById("machineSN").value = data.slNo || "";
+        document.getElementById("dept").value = data.dept || "";
+        document.getElementById("contactNo").value = data.contact || "";
+        document.getElementById("reportDate").value = data.date || "";
+        document.getElementById("techName").value = data.technician || "Dinesh T";
+        
+        // checklist restore
+        if(data.checklist && data.checklist.length === checkPoints.length) {
+            for(let i = 0; i < checkPoints.length; i++) {
+                const ch = data.checklist[i];
+                if(ch.status === "OK") {
+                    const radioOk = document.querySelector(`input[name="status_${i}"][value="OK"]`);
+                    if(radioOk) radioOk.checked = true;
+                } else if(ch.status === "NOTOK") {
+                    const radioNot = document.querySelector(`input[name="status_${i}"][value="NOTOK"]`);
+                    if(radioNot) radioNot.checked = true;
+                }
+                const remarkField = document.querySelector(`.remark-input[data-idx="${i}"]`);
+                if(remarkField) remarkField.value = ch.remark || "";
+            }
+        }
+        // scope restore
+        if(data.scopeItems && data.scopeItems.length) {
+            loadScopeFromData(data.scopeItems);
+        } else {
+            loadScopeFromData(null);
+        }
+    }
 
-cust.value=d.cust||"";
-model.value=d.model||"";
-person.value=d.person||"";
-sl.value=d.sl||"";
-dept.value=d.dept||"";
-contact.value=d.contact||"";
-date.value=d.date||"";
-tech.value=d.tech||"";
+    // ======================= 4. CLEAR ALL FORM =======================
+    function clearAllFormData() {
+        if(confirm("⚠️ WARNING: This will erase all entered data, checklist selections, scope items, and signatures. Are you sure?")) {
+            // Clear all text inputs & radios
+            document.getElementById("custName").value = "";
+            document.getElementById("machineModel").value = "Vantage 1000 LM";
+            document.getElementById("contactPerson").value = "";
+            document.getElementById("machineSN").value = "";
+            document.getElementById("dept").value = "";
+            document.getElementById("contactNo").value = "";
+            document.getElementById("reportDate").value = new Date().toISOString().slice(0,10);
+            document.getElementById("techName").value = "Dinesh T";
+            
+            // Clear all radio buttons
+            for(let i = 0; i < checkPoints.length; i++) {
+                const radios = document.querySelectorAll(`input[name="status_${i}"]`);
+                radios.forEach(r => r.checked = false);
+                const remarkField = document.querySelector(`.remark-input[data-idx="${i}"]`);
+                if(remarkField) remarkField.value = "";
+            }
+            // Reset scope to default 3 rows
+            loadScopeFromData(null);
+            // Clear signatures from localStorage and images
+            localStorage.removeItem("tech_signature");
+            localStorage.removeItem("cust_signature");
+            document.getElementById("techSignImg").src = "";
+            document.getElementById("custSignImg").src = "";
+            document.getElementById("techSignImg").style.background = "#fef9e6";
+            document.getElementById("custSignImg").style.background = "#fef9e6";
+            // Save cleared state
+            saveAllFormData();
+            alert("✅ All form data cleared successfully!");
+        }
+    }
 
-d.checklist?.forEach((it,i)=>{
-if(it.status){
-let r=document.querySelector(`input[name="r${i}"][value="${it.status}"]`);
-if(r) r.checked=true;
-}
-document.getElementById(`remark${i}`).value=it.remark||"";
-});
+    // ======================= 5. SIGNATURE HANDLING =======================
+    let activeSignatureType = null;
+    const modal = document.getElementById("signModal");
+    const canvas = document.getElementById("signatureCanvas");
+    let ctx = canvas.getContext("2d");
+    let drawing = false;
 
-if(d.scope?.length) d.scope.forEach(x=>addScopeRow(x));
-else for(let i=0;i<3;i++) addScopeRow();
-}
+    function resizeCanvasElement() {
+        const containerWidth = Math.min(400, window.innerWidth - 80);
+        canvas.width = containerWidth;
+        canvas.height = 160;
+        ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = "#0f172a";
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = "round";
+    }
 
-// ---------- PDF ----------
-function downloadPDF(){
-html2canvas(report).then(c=>{
-let pdf=new jspdf.jsPDF();
-pdf.addImage(c.toDataURL(),"PNG",0,0,210,295);
-pdf.save("TPM_Report.pdf");
+    function getCanvasCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        let x = (clientX - rect.left) * scaleX;
+        let y = (clientY - rect.top) * scaleY;
+        x = Math.min(Math.max(0, x), canvas.width);
+        y = Math.min(Math.max(0, y), canvas.height);
+        return { x, y };
+    }
 
-if(confirm("Clear form after download?")){
-localStorage.clear();
-location.reload();
-}
-});
-}
+    function startDraw(e) {
+        e.preventDefault();
+        drawing = true;
+        const { x, y } = getCanvasCoords(e);
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
 
-// ---------- INIT ----------
-loadData();
-loadSignature();
+    function drawMove(e) {
+        if (!drawing) return;
+        e.preventDefault();
+        const { x, y } = getCanvasCoords(e);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+    }
 
-document.querySelectorAll("input").forEach(i=>{
-i.addEventListener("input",saveData);
-});
+    function stopDraw() {
+        drawing = false;
+        ctx.beginPath();
+    }
 
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = "#0f172a";
+        ctx.lineWidth = 2.5;
+    }
+
+    function openSignatureModal(type) {
+        activeSignatureType = type;
+        resizeCanvasElement();
+        clearCanvas();
+        modal.style.display = "flex";
+        document.body.style.overflow = "hidden";
+        // Load existing signature into canvas if present
+        const existingImg = (type === 'tech') ? localStorage.getItem("tech_signature") : localStorage.getItem("cust_signature");
+        if (existingImg) {
+            const img = new Image();
+            img.onload = () => {
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            };
+            img.src = existingImg;
+        }
+    }
+
+    function saveSignature() {
+        if (!activeSignatureType) return;
+        const dataURL = canvas.toDataURL("image/png");
+        if (activeSignatureType === 'tech') {
+            localStorage.setItem("tech_signature", dataURL);
+            document.getElementById("techSignImg").src = dataURL;
+        } else {
+            localStorage.setItem("cust_signature", dataURL);
+            document.getElementById("custSignImg").src = dataURL;
+        }
+        closeModal();
+        saveAllFormData();
+    }
+
+    function closeModal() {
+        modal.style.display = "none";
+        document.body.style.overflow = "";
+        activeSignatureType = null;
+    }
+
+    function loadSignatures() {
+        const techSig = localStorage.getItem("tech_signature");
+        const custSig = localStorage.getItem("cust_signature");
+        if(techSig) document.getElementById("techSignImg").src = techSig;
+        if(custSig) document.getElementById("custSignImg").src = custSig;
+    }
+
+    function attachCanvasEvents() {
+        canvas.addEventListener("mousedown", startDraw);
+        canvas.addEventListener("mousemove", drawMove);
+        canvas.addEventListener("mouseup", stopDraw);
+        canvas.addEventListener("mouseleave", stopDraw);
+        canvas.addEventListener("touchstart", startDraw, { passive: false });
+        canvas.addEventListener("touchmove", drawMove, { passive: false });
+        canvas.addEventListener("touchend", stopDraw);
+    }
+
+    // ======================= 6. PDF GENERATION =======================
+    async function generatePDF() {
+
+        saveAllFormData();
+
+        const element = document.getElementById("report");
+
+        const btn = document.querySelector(".btn-download");
+        const originalText = btn.innerText;
+
+        btn.innerText = "⏳ Generating PDF...";
+        btn.disabled = true;
+
+        try {
+
+            const canvasPDF = await html2canvas(element, {
+                scale: 1.3,                 // 🔻 REDUCED
+                backgroundColor: "#ffffff",
+                logging: false
+            });
+
+            // 🔻 JPEG compression
+            const imgData = canvasPDF.toDataURL("image/jpeg", 0.7);
+
+            const { jsPDF } = window.jspdf;
+
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4',
+                compress: true            // 🔻 ENABLE COMPRESS
+            });
+
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+
+            const imgProps = pdf.getImageProperties(imgData);
+            const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight);
+
+            heightLeft -= pdfHeight;
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight);
+                heightLeft -= pdfHeight;
+            }
+
+            pdf.save("TPM_Report_Optimized.pdf");
+
+        } catch (err) {
+            console.error(err);
+            alert("PDF generation error");
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    // ======================= 7. INITIALIZATION =======================
+    function init() {
+        buildChecklistTable();
+        loadScopeFromData(null);
+        loadAllFormData();
+        loadSignatures();
+        attachCanvasEvents();
+        
+        if(!document.getElementById("reportDate").value) {
+            const today = new Date().toISOString().slice(0,10);
+            document.getElementById("reportDate").value = today;
+        }
+        
+        const infoInputs = document.querySelectorAll(".info-grid input");
+        infoInputs.forEach(inp => inp.addEventListener("input", saveAllFormData));
+        document.getElementById("addScopeBtn").addEventListener("click", () => {
+            addScopeRow("", "");
+            saveAllFormData();
+        });
+        saveAllFormData();
+    }
+    
+    init();
 </script>
-
 </body>
 </html>
