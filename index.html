@@ -322,19 +322,33 @@
 <body>
 
 <div id="report" class="form-sheet">
-    <h2>🔧 Micromatic Machine Tools Pvt Ltd</h2> 
-    <h2>TPM PREVENTIVE MAINTENANCE <br> PRE-VISIT REPORT (ACE Series)</h2>
+    <h2>ACE DESIGNERS</h2> 
+    <h2>TPM PRE-VISIT REPORT (ACE)</h2>
 
     <!-- Customer & machine details grid -->
     <div class="info-grid">
-        <div class="info-item"><label>🏭 Customer Name :</label><input type="text" id="custName" placeholder="e.g., ABC Industries" value=""></div>
-        <div class="info-item"><label>⚙️ Machine Model :</label><input type="text" id="machineModel" placeholder="Vantage 1000 LM" value="Vantage 1000 LM"></div>
-        <div class="info-item"><label>👤 Contact Person :</label><input type="text" id="contactPerson" placeholder="Mr. Sharma" value=""></div>
-        <div class="info-item"><label>🔢 Machine SL.NO :</label><input type="text" id="machineSN" placeholder="MMT-2345" value=""></div>
+        <div class="info-item"><label>🏭 Customer Name :</label><input type="text" id="custName" placeholder="Enter Customer Name" value=""></div>
+        <div class="info-item"><label>⚙️ Machine Model :</label><input type="text" id="machineModel" placeholder="Enter M/C Type" value=""></div>
+        <div class="info-item"><label>👤 Contact Person :</label><input type="text" id="contactPerson" placeholder="Enter Contact Person Name" value="Mr."></div>
+        <div class="info-item"><label>🔢 Machine SL.NO :</label><input type="text" id="machineSN" placeholder="Enter M/C SL NO" value=""></div>
         <div class="info-item"><label>📂 Department :</label><input type="text" id="dept" placeholder="Production / Maintenance" value=""></div>
-        <div class="info-item"><label>📞 Contact No :</label><input type="text" id="contactNo" placeholder="+91 9876543210" value=""></div>
+        <div class="info-item"><label>📞 Contact No :</label><input type="text" id="contactNo" placeholder="+91 0123456789" value=""></div>
         <div class="info-item"><label>📅 Date :</label><input type="date" id="reportDate" value=""></div>
-        <div class="info-item"><label>👨‍🔧 Technician :</label><input type="text" id="techName" placeholder="Dinesh T" value="Dinesh T"></div>
+        <div class="info-item"><label>👨‍🔧 Attended by :</label>
+                    <select id="attendedby">
+                        <option value="">Select Engineer</option>
+                        <option>Saravanan M</option>
+                        <option>Srinivasan J</option>
+                        <option>Dinesh T</option>
+                        <option>Suresh c</option>
+                        <option>Suresh M</option>
+                        <option>Vignesh m</option>
+                        <option>Arun s</option>
+                        <option>Arun V</option>
+                        <option>Pradeep </option>
+                    </select></div>
+
+            
     </div>
 
     <!-- Main checklist table (bordered) with proper column widths -->
@@ -376,7 +390,7 @@
             <img id="custSignImg" class="signature-box" alt="Customer signature" onclick="openSignatureModal('cust')">
         </div>
     </div>
-    <footer>✔️ Tap on signature box to draw. All data auto-saves locally.</footer>
+    <footer>✔️ Tap on signature box to draw the signature.</footer>
 </div>
 
 <!-- Action Buttons -->
@@ -469,8 +483,8 @@
         const newRow = document.createElement("tr");
         newRow.innerHTML = `
             <td style="text-align:center; vertical-align:middle;">${scopeCounter}</td>
-            <td><textarea class="scope-mmt" rows="2" placeholder="e.g., Replace hydraulic filter, adjust belts, inspect spindle..." style="width:100%; resize:vertical;">${escapeHtml(mmtVal)}</textarea></td>
-            <td><textarea class="scope-cust" rows="2" placeholder="Customer action / spares to arrange / timeline" style="width:100%; resize:vertical;">${escapeHtml(custVal)}</textarea></td>
+            <td><textarea class="scope-mmt" rows="2" placeholder="e.g., MMT Scope..." style="width:100%; resize:vertical;">${escapeHtml(mmtVal)}</textarea></td>
+            <td><textarea class="scope-cust" rows="2" placeholder="e.g., Customer Scope..." style="width:100%; resize:vertical;">${escapeHtml(custVal)}</textarea></td>
         `;
         scopeBody.appendChild(newRow);
         const mmtInp = newRow.querySelector('.scope-mmt');
@@ -488,9 +502,9 @@
             });
         } else {
             // default 3 meaningful rows
-            addScopeRow("Inspect hydraulic oil & filter condition, check for contamination", "Provide maintenance window & arrange oil if required");
-            addScopeRow("Check spindle drive belts tension and wear condition", "Arrange machine shutdown for 2 hours");
-            addScopeRow("Coolant tank cleaning & Y-strainer servicing", "Support for coolant disposal and fresh coolant");
+            addScopeRow("", "Arrange oil if required");
+            addScopeRow("", "Support for coolant disposal and fresh coolant");
+            addScopeRow("", "");
         }
     }
 
@@ -514,7 +528,7 @@
             dept: document.getElementById("dept").value,
             contact: document.getElementById("contactNo").value,
             date: document.getElementById("reportDate").value,
-            technician: document.getElementById("techName").value,
+            technician: document.getElementById("attendedby").value,
             checklist: [],
             scopeItems: []
         };
@@ -541,13 +555,13 @@
         if(!saved) return;
         const data = JSON.parse(saved);
         document.getElementById("custName").value = data.customer || "";
-        document.getElementById("machineModel").value = data.model || "Vantage 1000 LM";
+        document.getElementById("machineModel").value = data.model || "";
         document.getElementById("contactPerson").value = data.person || "";
         document.getElementById("machineSN").value = data.slNo || "";
         document.getElementById("dept").value = data.dept || "";
         document.getElementById("contactNo").value = data.contact || "";
         document.getElementById("reportDate").value = data.date || "";
-        document.getElementById("techName").value = data.technician || "Dinesh T";
+        document.getElementById("attendedby").value = data.technician || "";
         
         // checklist restore
         if(data.checklist && data.checklist.length === checkPoints.length) {
@@ -577,13 +591,13 @@
         if(confirm("⚠️ WARNING: This will erase all entered data, checklist selections, scope items, and signatures. Are you sure?")) {
             // Clear all text inputs & radios
             document.getElementById("custName").value = "";
-            document.getElementById("machineModel").value = "Vantage 1000 LM";
+            document.getElementById("machineModel").value = "";
             document.getElementById("contactPerson").value = "";
             document.getElementById("machineSN").value = "";
             document.getElementById("dept").value = "";
             document.getElementById("contactNo").value = "";
             document.getElementById("reportDate").value = new Date().toISOString().slice(0,10);
-            document.getElementById("techName").value = "Dinesh T";
+            document.getElementById("attendedby").value = "";
             
             // Clear all radio buttons
             for(let i = 0; i < checkPoints.length; i++) {
