@@ -51,21 +51,32 @@ input {
 #signModal{
     display:none;
     position:fixed;
-    top:0;left:0;
-    width:100%;height:100%;
-    background:rgba(0,0,0,0.6);
+    top:0;
+    left:0;
+    width:100vw;
+    height:100vh;
+    background:rgba(0,0,0,0.7);
+    z-index:9999;
+
+    display:flex;
     justify-content:center;
     align-items:center;
-    z-index:9999;
+
+    overflow:hidden;
 }
 
 .modal-box{
     background:#fff;
     padding:15px;
-    width:90%;
+    width:95%;
     max-width:400px;
     border-radius:10px;
     text-align:center;
+}
+
+/* LOCK BODY SCROLL */
+body.modal-open{
+    overflow:hidden;
 }
 
 button{
@@ -180,71 +191,106 @@ scopeTable.innerHTML+=`
 }
 
 // ---------- SIGNATURE ----------
-let currentSign="";
-const canvas=document.getElementById("signPad");
-const ctx=canvas.getContext("2d");
+let currentSign = "";
+const canvas = document.getElementById("signPad");
+const ctx = canvas.getContext("2d");
 
+// FIX DPI
 function resizeCanvas(){
-let ratio=window.devicePixelRatio||1;
-canvas.width=canvas.offsetWidth*ratio;
-canvas.height=canvas.offsetHeight*ratio;
-ctx.scale(ratio,ratio);
+    const ratio = window.devicePixelRatio || 1;
+    canvas.width = canvas.offsetWidth * ratio;
+    canvas.height = canvas.offsetHeight * ratio;
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 }
 resizeCanvas();
 
-let drawing=false;
+let drawing = false;
 
+// GET POSITION
 function getPos(e){
-let r=canvas.getBoundingClientRect();
-return{
-x:(e.touches?e.touches[0].clientX:e.clientX)-r.left,
-y:(e.touches?e.touches[0].clientY:e.clientY)-r.top
-};
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x:(e.touches ? e.touches[0].clientX : e.clientX) - rect.left,
+        y:(e.touches ? e.touches[0].clientY : e.clientY) - rect.top
+    };
 }
 
+// START DRAW
+function startDraw(e){
+    e.preventDefault(); // 🚫 STOP SCROLL
+    drawing = true;
+    const p = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+}
+
+// DRAW
 function draw(e){
-if(!drawing)return;
-let p=getPos(e);
-ctx.lineTo(p.x,p.y);
-ctx.stroke();
-ctx.beginPath();
-ctx.moveTo(p.x,p.y);
+    if(!drawing) return;
+    e.preventDefault(); // 🚫 STOP SCROLL
+    const p = getPos(e);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
 }
 
-canvas.onmousedown=()=>drawing=true;
-canvas.onmouseup=()=>drawing=false;
-canvas.onmousemove=draw;
+// STOP DRAW
+function stopDraw(e){
+    drawing = false;
+}
 
-canvas.ontouchstart=()=>drawing=true;
-canvas.ontouchend=()=>drawing=false;
-canvas.ontouchmove=draw;
+// EVENTS (IMPORTANT: passive:false)
+canvas.addEventListener("mousedown", startDraw);
+canvas.addEventListener("mousemove", draw);
+canvas.addEventListener("mouseup", stopDraw);
 
+canvas.addEventListener("touchstart", startDraw, {passive:false});
+canvas.addEventListener("touchmove", draw, {passive:false});
+canvas.addEventListener("touchend", stopDraw);
+
+// OPEN MODAL
 function openSign(type){
-currentSign=type;
-signModal.style.display="flex";
-ctx.clearRect(0,0,canvas.width,canvas.height);
+    currentSign = type;
+    document.getElementById("signModal").style.display = "flex";
+    document.body.classList.add("modal-open"); // LOCK SCROLL
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.beginPath(); // ✅ FIX backward issue
 }
 
-function closePad(){signModal.style.display="none";}
-function clearPad(){ctx.clearRect(0,0,canvas.width,canvas.height);}
+// CLOSE
+function closePad(){
+    document.getElementById("signModal").style.display = "none";
+    document.body.classList.remove("modal-open");
+}
 
+// CLEAR
+function clearPad(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.beginPath();
+}
+
+// SAVE
 function savePad(){
-let data=canvas.toDataURL();
-if(currentSign==="tech"){
-techPreview.src=data;
-localStorage.setItem("techSign",data);
-}else{
-custPreview.src=data;
-localStorage.setItem("custSign",data);
-}
-closePad();
+    const data = canvas.toDataURL("image/png");
+
+    if(currentSign === "tech"){
+        document.getElementById("techPreview").src = data;
+        localStorage.setItem("techSign", data);
+    } else {
+        document.getElementById("custPreview").src = data;
+        localStorage.setItem("custSign", data);
+    }
+
+    closePad();
 }
 
+// LOAD
 function loadSignature(){
-let t=localStorage.getItem("techSign");
-let c=localStorage.getItem("custSign");
-if(t) techPreview.src=t;
-if(c) custPreview.src=c;
+    let t = localStorage.getItem("techSign");
+    let c = localStorage.getItem("custSign");
+
+    if(t) document.getElementById("techPreview").src = t;
+    if(c) document.getElementById("custPreview").src = c;
 }
 
 // ---------- SAVE ----------
